@@ -1,0 +1,124 @@
+* {
+    padding: 0;
+    margin:0;
+    box-sizing: border-box;
+    font-family: Helvetica;
+
+}
+
+body {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    background-color: #252525;
+    gap:2rem;
+    flex-wrap: wrap;
+}
+
+.form-register, .form-login {
+
+    width:250px;
+    height: 400px;
+    background-color: #121212;
+    display: flex;
+    padding: 1rem;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1rem;
+    border-radius: 1rem;
+
+}
+
+input {
+    padding: 0.3rem;
+    border-radius: 0.3rem;
+}
+
+.btn-submit {
+    padding: 0.3rem;
+    border-radius: 0.3rem;
+    border: 1px #121212 solid;
+    cursor: pointer;
+}
+
+.title {
+    text-align: center;
+    color:white;
+
+}
+a {
+    text-decoration: none;
+    color: white;
+}
+
+.have-account {
+    text-align: center;
+}
+
+/*main*/
+.container-right {
+    width: 400px;
+    height: 500px;
+    background-color: #121212;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 1rem;
+    justify-content: center;
+    gap:0.4rem;
+    padding: 2rem;
+}
+#msg-box {  
+    width: 300px;
+    height: 400px;
+    background-color: white;
+    overflow-y: scroll;
+    border-radius: 1rem;
+    padding: 1rem;
+}
+#name, #msg,.enviar {
+    width:70%;
+}
+
+.logout {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+}
+
+.container-left {
+    height: 500px;
+    background-color: #121212;
+    width: 300px;
+    display: flex;
+    padding: 1rem;
+    flex-direction: column;
+    justify-content:flex-start;
+    align-items: center;
+    gap: 1rem;
+    border-radius: 1rem;
+}
+
+/*Friend list*/
+
+
+.friend-list {
+    width: 100%;
+}
+
+.friend-list li {
+    list-style: none;
+    width: 100%;
+    background-color: #252525;
+    border-radius: 0.3rem;
+    text-align: center;
+    margin-bottom: 1rem;
+
+}
+.friend-list li a {
+    width: 80%;
+
+}

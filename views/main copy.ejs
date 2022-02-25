@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./styles.css">
+    <title>Welcome Back! <%=username%> </title>
+</head>
+<body>
+    <!--Flutuante-->
+    <a href="/logout" class="logout" >Logout</a>
+    
+    <div class="container-left">
+        <h1 class="title">Online</h1>
+        <ul class="friend-list">
+        </ul>
+
+
+        <div class="container">
+        <!--Form de criação de rooms-->
+          <form action="/createRoom" method="POST">
+            <label type="text" class="title" > Crie uma nova sala </label> <hr>
+            <input type="text" class="room-name" placeholder="Nome da sala" name="roomName" required>
+            <select name="limit" >
+              <option value="-1">Selecione o tipo de sala</option>
+              <option value="private">privado</option>
+              <option value="group">grupo</option>
+            </select>
+            <button type="submit" class="create-room">Create room</button>
+        </form>
+        </div>
+      
+        <br>
+      
+        <div class="container">
+        <!-- Selecione rooms-->
+          <form action="/main/room" method="POST">
+            <label type="text" class="title" > Selecione uma sala </label> <hr>
+
+            <select name="select_room">
+              <option value="-1">Selecione uma sala</option>
+              <option value="node">node</option>
+              <option value="java">java</option>
+            </select>
+            <button type="submit" class="selectedRoom">Entrar</button>
+          </form>
+        </div>
+
+    </div>
+  
+    <div class="container-right">
+    <h1 class="title">Global</h1>
+    <div class="message-box" id="msg-box"></div>
+    <!--<input type="text" placeholder="What's your name?" id="name">-->
+    <input type="text" placeholder="Type a message..." id="msg">
+    <button class="enviar" id="send" onclick="enviar()">Enviar</button>
+    </div>
+
+    
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.js" integrity="sha512-MgkNs0gNdrnOM7k+0L+wgiRc5aLgl74sJQKbIWegVIMvVGPc1+gc1L2oK9Wf/D9pq58eqIJAxOonYPVE5UwUFA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script> 
+      
+    
+    let socket = io("http://localhost:3000");
+    
+    function enviar(){
+        //let nome = document.getElementById("name").value;
+        let msg = document.getElementById("msg").value;
+        let nome = "<%=username%>";
+
+        if (/*nome==="" ||*/msg === ""){
+            return;
+        }
+        else {
+            socket.emit("message", {nome:nome, msg:msg});
+            document.getElementById("msg").value="";
+        }
+
+    }
+
+        socket.on("showmessage", data=>{
+            let p = document.createElement("p");
+            p.innerText = data.nome+": "+data.msg;
+            p.style.marginBottom = "0.5rem";
+            p.style.backgroundColor = "#A3A3A3";
+            p.style.padding = "0.5rem";
+            p.style.borderRadius = "0.3rem";
+            p.style.overflow = "auto";
+            let div = document.getElementById("msg-box");
+            div.appendChild(p);
+        })
+
+        //USERS ONLINE
+        socket.emit("userOnline", {user:"<%=username%>"});
+
+        socket.on("showUser", dado=>{
+            let li1 = document.createElement("li");
+            li1.innerText = `${dado.user} is online!`;
+            let ul1 = document.querySelector(".friend-list");
+            ul1.appendChild(li1);
+           
+           
+            
+        })
+      
+    </script>
+
+</body>
+</html>

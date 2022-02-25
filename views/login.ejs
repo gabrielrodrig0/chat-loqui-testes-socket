@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles.css">
+    <title>Loqui - login</title>
+</head>
+<body>
+    
+    
+    <form class="form-register" method="POST" action="/authenticate">
+        
+        <h1 class="title">Login!</h1>
+        <input type="text" name="username" placeholder="Digite seu username" required>
+        <input type="password" name="password" placeholder="Digite sua senha" required>
+        <a href="/register"><p class="have-account">Não possui uma conta?</p></a>
+        <button class="btn-submit">Entrar</button>    
+    </form>
+</body>
+</html>
