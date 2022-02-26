@@ -5,8 +5,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./styles.css">
-    <title>Welcome Back! <%=username%> </title>
+  
+    <title> Room!</title> <!--Alteração feita aqui, de acordo com o original-->
 </head>
+
+
 <body>
     <!--Flutuante-->
     <a href="/logout" class="logout" >Logout</a>
@@ -20,33 +23,26 @@
         <div class="container">
         <!--Form de criação de rooms-->
           <form action="/createRoom" method="POST">
-            <label type="text" class="title" > Crie uma nova sala </label> <hr>
+            <label type="text" class="title" > Crie uma nova sala </label> 
             <input type="text" class="room-name" placeholder="Nome da sala" name="roomName" required>
-            <select name="limit" >
+            <select name="limit" required >
               <option value="-1">Selecione o tipo de sala</option>
               <option value="private">privado</option>
               <option value="group">grupo</option>
             </select>
             <button type="submit" class="create-room">Create room</button>
-            
-        </form>
+          </form>
+          <br> <hr> 
         </div>
-      
-        <br>
       
         
 
-          
-
-
-
-
-
         <div class="container">
+
         <!-- Selecione rooms-->
           <form action="/selectedroom" method="POST">
-            <input type="hidden"  value= "<%=username%>" name = "userName" >
-            <label type="text" class="title" > Selecione uma sala </label> <hr>
+            <input type="hidden"  value= "<%=userName%>" name = "userName" >
+            <label type="text" class="title" > Selecione uma sala </label> 
             <select name="select_room">
               <option value="-1">Selecione uma sala</option>
               <% rms.forEach(function(name){ %>
@@ -60,15 +56,6 @@
         </div>
 
     </div>
-  
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.js" integrity="sha512-MgkNs0gNdrnOM7k+0L+wgiRc5aLgl74sJQKbIWegVIMvVGPc1+gc1L2oK9Wf/D9pq58eqIJAxOonYPVE5UwUFA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script> 
-      
-    
-    let socket = io("http://localhost:3000");
-    
-      
-    </script>
 
 </body>
 

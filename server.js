@@ -1,19 +1,17 @@
-const express = require("express");
-const app = express();
-const http = require("http").createServer(app)
-const io = require("socket.io")(http);
+
+const {http} = require("./https");
+const {io} = require("./https");
+const {app} = require("./https");
+const {express} = require("./https");
 const bodyParser = require("body-parser");
 const users = require("./database/users");
 const usersController = require("./user/usersController");
 const session = require("express-session");
 const middlewares = require("./middlewares/auth");
 const rooms = require("./database/rooms");
-const usersInRooms = require("./database/usersInRoom");
-//---------------------------------------------
+const usersInRoom = require("./database/usersInRoom");
+const messages = require("./database/messages");
 
-//---------------------------------------------
-let count = 0;
-let userList = [];
 
 //session
 
@@ -42,48 +40,250 @@ app.use("/", usersController);
 
 app.get("/main", middlewares,(req,res)=>{
     users.findOne({where:{username:req.session.user.user}}).then(user=>{
-        var username = user.username;
+        let username = user.username;
         res.render("main", {username:username});
         console.log(username+" se conectou!");
     })
 })
-/*
+
+
+
+
+
 io.on("connection", (socket)=>{
-    
-    count++;
-    userList.push(socket.id);
-    console.log(userList);
-    
-    console.log(socket.id+" entrou!");
-    console.log(count+" usuários on-line!");
-    
+
+    console.log("Conexão feita com Sucess, Id: "+socket.id)
+
+
+    socket.on("selected_room", (data)=>{
+
+        /*messages.findAll({where:{roomName:data.roomName}}).then(message=>{
+            for(let i=0; i<message.lenght;i++){
     
 
-    socket.on("disconnect", ()=>{
-        count--;
-        for (let k=0; k<userList.length; k++){
-            if(userList[k]===socket.id){
-                userList.splice(k,1);
+//roomName userName msg
+
+                io.to(data.roomName).emit("showmessage", {message[i]})
             }
-        }
-        //console.log(socket.id+" se desconectou!");
-        console.log(count+" usuários on-line!");
-        console.log(userList);
+        })*/
+        
+        
+        rooms.findOne({where:{roomName:data.roomName}}).then(room =>{
+            
+    
+              if(room == undefined){
+                console.log("ROOM NAO EXISTE");
+    
+              }else{ // room exists
+          
+                if(room.limit == "group"){
+                    usersInRoom.findAll({where:{roomName:data.roomName}}).then(inRoom =>{
+                        let local=false,i;
+                        for(i = 0; i<inRoom.length; i++){
+                            if(inRoom[i].userName == data.userName){
+                                local = true;break;
+                            }
+                        }
+                        if(local){/*usuário já esteve nessa room
+                            atualize seu id e da um join para room*/
+                            inRoom[i].socketId = socket.id;
+                            console.log("ID atualizado - Grupo")
+                            
+                        }else{ /*usuário nunca esteve nessa room group
+                                então da join e anexe no userIroom*/
+                          usersInRoom.create({
+                              roomName:data.roomName,
+                              userName:data.userName,
+                              socketId:socket.id
+                          }).then(()=>{
+                              console.log("ATRELACAO FEITA COM SUCESSO");
+                          })
+                        }
+                  });
+                  socket.join(data.roomName);   
+                  
+
+                  for(let i =0;i<message.length ; i++){
+                    io.to(data.roomName).emit("showmessage", message[i]);
+                  }
+
+
+                  
+
+
+                //PRIVADO
+                }else { //room.limit == private
+
+                    console.log("roomName: "+data.roomName+" || userName: "+data.userName);
+    
+                    usersInRoom.findAll({where:{roomName:data.roomName}}).then(inRoom =>{
+                        let local0=false,i;
+                        for(i = 0; i<inRoom.length; i++){
+                            if(inRoom[i].userName == data.userName){
+                                local0 = true;break;
+                            }
+                        }
+                        
+                        if(local0){
+                            /*usuário esteve nessa private room 
+                         atualize seu id e da um join para room*/
+                            socket.join(data.roomName);
+                            inRoom[i].socketId = socket.id;
+                            console.log("ID atualizado - Privado");
+
+                        }else{  
+                            /*nunca esteve nessa room antes, verificar quantas pessoas tem nesta 
+                            room privada, caso tenha menos de duas pessoas, usuário pode entrar */
+                                console.log("QUANTAS PESSOAS NA SALA: "+inRoom.length)
+        
+                                if(inRoom.length == 2){//não pode entrar, chat privado
+                                    console.log("SALA CHEIA, NÃO VAI ENTRARRRRR")
+                                }else{
+                                    /*usuário nunca esteve nessa room private, mas ele pode entrar
+                                    então da join e anexe no userIroom*/
+                                    usersInRoom.create({
+                                        roomName:data.roomName,
+                                        userName:data.userName,
+                                        socketId:socket.id
+            
+                                    }).then(()=>{
+                                    console.log("ATRELACAO FEITA COM SUCESSO");
+                                    })
+                                    socket.join(data.roomName);
+                                }
+
+                        }
+
+
+
+        
+
+
+
+                       
+    
+                        
+                    
+                  })
+                } 
+              }
+              
+            })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+       
+
+        /*if(auxVerificador==1){
+            socket.join(data.roomName)
+        }else{
+            //Aqui necessário atualização ;
+            console.log("Cheguei no coitado que NÃO VAI ENTRARRRR!")
+            //redirect("/room");
+        }*/
+        
+
+    })
+      
+      
+
+
+
+    socket.on("message", (data)=>{
+        //roomName userName msg
+
+
+        //roomName, userName, messages
+        usersInRoom.findAll({where:{roomName:data.roomName}}).then(inRoom=>{
+            let local;
+            for(let i = 0; i<inRoom.length; i++){
+                if(inRoom[i].userName == data.userName){
+                    local = true;
+                }
+            }
+            if(local){
+
+                messages.create({
+                    roomName:data.roomName,
+                    userName:data.userName,
+                    messages:data.msg
+
+                })
+
+
+                io.to(data.roomName).emit("showmessage", data)
+            }else{
+                console.log("Voce nao deveria estar nessa sala")
+            }
+        })
+
+        
+
     })
 
-    socket.on("message", data=>{
-        console.log(data.nome+": "+data.msg);
-        io.emit("showmessage", data);
-    })
+    
 
-    //USERS ONLINE
-    socket.on("userOnline", dado=>{
-        io.emit("showUser", dado);
-    })
+
+
 
     
 })
-*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

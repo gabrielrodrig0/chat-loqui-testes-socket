@@ -1,7 +1,6 @@
 const express = require("express");
 const users = require("../database/users");
 const rooms = require("../database/rooms");
-const usersInRooms = require("../database/usersInRoom");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 
@@ -12,10 +11,10 @@ router.get("/", (req,res)=>{
 })
 
 router.post("/authenticate", (req,res)=>{
-    let username = req.body.username;
-    let password = req.body.password;
+    const userName = req.body.userName;
+    const password = req.body.password;
 
-    users.findOne({where:{username:username}}).then(user=>{
+    users.findOne({where:{username:userName}}).then(user=>{
 
         if(user!=undefined){
             //password validate
@@ -28,23 +27,18 @@ router.post("/authenticate", (req,res)=>{
                 }
                 
                 rooms.findAll({raw:true}).then(rms =>{
+                    
                     res.render("room",{
-                        username:username,
+                        userName:userName,
                         rms:rms
                     })
-
-
                 })
-
-
-
                 //res.json(req.session.user);
             }
             else {
                 res.redirect("/");
             }
-        }
-        else {
+        }else {
             res.redirect("/");
         }
     })
@@ -59,9 +53,9 @@ router.get("/register", (req,res)=>{
 
 router.post("/register", (req,res)=>{
 
-    let username = req.body.username;
-    let email = req.body.email;
-    let password = req.body.password;
+    const username = req.body.username;
+    const email = req.body.email;
+    const password = req.body.password;
     
     //Verificando se já tem usernames e emails no banco de dados!
 
@@ -113,21 +107,20 @@ router.get("/logout", (req,res)=>{
 //room 
 
 router.post("/createRoom", (req,res)=>{
-
-    let roomName = req.body.roomName;
-    let limit = req.body.limit;
+    //mudança realizada aqui
+    const roomName = req.body.roomName;
+    const limit = req.body.limit;
   
     rooms.findOne({where:{roomName:roomName}}).then(room =>{
   
       if(room != undefined){
-        console.log("SALA JÁ EXISTE NÃO É POSSIVEL CRIAR ")
+        res.send("<h1>Room já existe<h1>")
       } else{
         rooms.create({   
           roomName:roomName,
           limit:limit
         }).then(()=>{
-          console.log("ROOM CRIADA COM SUCESSO");
-          
+          res.send("<h1>Created Room<h1>")
         })
       }
     })
@@ -135,25 +128,26 @@ router.post("/createRoom", (req,res)=>{
 
 router.post("/selectedroom", (req,res)=>{
 
-    let roomName = req.body.select_room;
-    let userName = req.body.userName;
-    
+    const userName = req.body.userName;
+    const roomName = req.body.select_room;
 
-    console.log("roomName: "+roomName)
-    console.log("userName: "+userName)
-    
-    res.send("roomName: "+roomName+ "  userName: "+userName)
+    //console.log("userName: "+userName+" || roomName: "+roomName);
+
+    res.render("main",{
+        userName:userName,
+        roomName:roomName
+  })
 
 })
 
 router.get("/room", (req,res)=>{
 
+    console.log("Room: "+rms+" || username: "+userName)
+    
     rooms.findAll({raw:true}).then(rooms =>{
-
-        res.render("room")
+        res.render("room");
     });
 });
-
 
 
 
