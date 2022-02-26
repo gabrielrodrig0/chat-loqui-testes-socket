@@ -52,25 +52,30 @@ app.get("/main", middlewares,(req,res)=>{
 
 io.on("connection", (socket)=>{
 
-    console.log("Conexão feita com Sucess, Id: "+socket.id)
+    console.log("Conexão feita com Sucesso")
 
 
     socket.on("selected_room", (data)=>{
-
-        /*messages.findAll({where:{roomName:data.roomName}}).then(message=>{
-            for(let i=0; i<message.lenght;i++){
-    
-
-//roomName userName msg
-
-                io.to(data.roomName).emit("showmessage", {message[i]})
+        /*
+        messages.findAll({where:{roomName:data.roomName}}).then(message=>{
+            console.log("ARRRRAAAYAYYAYAYYAYAYYAYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY")
+            console.log("TAMANHO DO ARRAY: "+ message.undefined)
+            if(message==undefined){
+                console.log("CHEGUEI NO MESSAGES UNDEFINED")
+            }else {
+                console.log("VÁ VIR O FOR EM SEGUIDA")
+                for(let i=0; i<message.length;i++){
+                    console.log("roomName: "+message[i].roomName+" || userName: "+message[i].userName);
+                    console.log("Mensagem: "+message[i].msg);
+                    io.to(data.roomName).emit("showmessage", message[i])
+                }
             }
-        })*/
-        
+
+        })
+        */
         
         rooms.findOne({where:{roomName:data.roomName}}).then(room =>{
             
-    
               if(room == undefined){
                 console.log("ROOM NAO EXISTE");
     
@@ -103,9 +108,7 @@ io.on("connection", (socket)=>{
                   socket.join(data.roomName);   
                   
 
-                  for(let i =0;i<message.length ; i++){
-                    io.to(data.roomName).emit("showmessage", message[i]);
-                  }
+                  
 
 
                   
@@ -113,17 +116,16 @@ io.on("connection", (socket)=>{
 
                 //PRIVADO
                 }else { //room.limit == private
-
-                    console.log("roomName: "+data.roomName+" || userName: "+data.userName);
     
                     usersInRoom.findAll({where:{roomName:data.roomName}}).then(inRoom =>{
                         let local0=false,i;
                         for(i = 0; i<inRoom.length; i++){
                             if(inRoom[i].userName == data.userName){
+                                console.log("NOMES: "+inRoom[i].userName)
                                 local0 = true;break;
                             }
                         }
-                        
+                        console.log("TAMANHO DO INROOOOOMM: "+inRoom.lenght)
                         if(local0){
                             /*usuário esteve nessa private room 
                          atualize seu id e da um join para room*/
@@ -153,60 +155,18 @@ io.on("connection", (socket)=>{
                                 }
 
                         }
-
-
-
-        
-
-
-
-                       
-    
-                        
                     
                   })
                 } 
               }
-              
-            })
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-       
-
-        /*if(auxVerificador==1){
-            socket.join(data.roomName)
-        }else{
-            //Aqui necessário atualização ;
-            console.log("Cheguei no coitado que NÃO VAI ENTRARRRR!")
-            //redirect("/room");
-        }*/
-        
+        })
 
     })
       
       
-
-
-
     socket.on("message", (data)=>{
         //roomName userName msg
-
-
         //roomName, userName, messages
         usersInRoom.findAll({where:{roomName:data.roomName}}).then(inRoom=>{
             let local;
@@ -221,9 +181,7 @@ io.on("connection", (socket)=>{
                     roomName:data.roomName,
                     userName:data.userName,
                     messages:data.msg
-
                 })
-
 
                 io.to(data.roomName).emit("showmessage", data)
             }else{
@@ -234,11 +192,6 @@ io.on("connection", (socket)=>{
         
 
     })
-
-    
-
-
-
 
     
 })
