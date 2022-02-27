@@ -7,6 +7,6 @@ const users = connection.define("cadastros", {
     password:{type: Sequelize.STRING, allowNull:false},
 })
 
-users.sync({force:false});
+users.sync({force:true});
 
 module.exports = users;

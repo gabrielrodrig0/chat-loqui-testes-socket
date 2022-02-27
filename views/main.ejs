@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="./styles.css">
-    <title>Welcome Back! <%=userName%> </title>
+    <title>Welcome Back! <%=username%> </title>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.js" 
       integrity="sha512-MgkNs0gNdrnOM7k+0L+wgiRc5aLgl74sJQKbIWegVIMvVGPc1+gc1L2oK9Wf/D9pq58eqIJAxOonYPVE5UwUFA==" 
@@ -21,7 +21,7 @@
     <a href="/logout" class="logout" >Logout</a>
   
     <div class="container-right">
-    <h1 class="title"><%=roomName%></h1>
+    <h1 class="title"><%=roomname%></h1>
     <div class="message-box" id="msg-box"></div>
     <input type="text" placeholder="Type a message..." id="msg">
     <button class="enviar" id="send" onclick="enviar()">Enviar</button>
@@ -32,10 +32,10 @@
   <script >
     
     const socket = io();
-    const roomName = "<%=roomName%>";
-    const userName = "<%=userName%>";
+    const roomname = "<%=roomname%>";
+    const username = "<%=username%>";
 
-    socket.emit("selected_room", { roomName:roomName, userName:userName});
+    socket.emit("selected_room", { roomname:roomname, username:username});
     function enviar(){
 
         const msg = document.getElementById("msg").value;
@@ -45,7 +45,7 @@
             return;
         }
         else {
-            socket.emit("message", {roomName, userName, msg});
+            socket.emit("message", {roomname, username, msg});
             document.getElementById("msg").value="";
         }
 
@@ -54,7 +54,7 @@
     socket.on("showmessage", data=>{
 
             let p = document.createElement("p");
-            p.innerText = data.userName+": "+data.msg;
+            p.innerText = data.username+": "+data.msg;
             p.style.marginBottom = "0.5rem";
             p.style.backgroundColor = "#A3A3A3";
             p.style.padding = "0.5rem";

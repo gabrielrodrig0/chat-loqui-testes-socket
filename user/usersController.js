@@ -11,10 +11,10 @@ router.get("/", (req,res)=>{
 })
 
 router.post("/authenticate", (req,res)=>{
-    const userName = req.body.userName;
+    const username = req.body.username;
     const password = req.body.password;
 
-    users.findOne({where:{username:userName}}).then(user=>{
+    users.findOne({where:{username:username}}).then(user=>{
 
         if(user!=undefined){
             //password validate
@@ -29,11 +29,10 @@ router.post("/authenticate", (req,res)=>{
                 rooms.findAll({raw:true}).then(rms =>{
                     
                     res.render("room",{
-                        userName:userName,
+                        username:username,
                         rms:rms
                     })
                 })
-                //res.json(req.session.user);
             }
             else {
                 res.redirect("/");
@@ -108,16 +107,16 @@ router.get("/logout", (req,res)=>{
 
 router.post("/createRoom", (req,res)=>{
     //mudança realizada aqui
-    const roomName = req.body.roomName;
+    const roomname = req.body.roomname;
     const limit = req.body.limit;
   
-    rooms.findOne({where:{roomName:roomName}}).then(room =>{
+    rooms.findOne({where:{roomname:roomname}}).then(room =>{
   
       if(room != undefined){
         res.send("<h1>Room já existe<h1>")
       } else{
         rooms.create({   
-          roomName:roomName,
+          roomname:roomname,
           limit:limit
         }).then(()=>{
           res.send("<h1>Created Room<h1>")
@@ -128,21 +127,20 @@ router.post("/createRoom", (req,res)=>{
 
 router.post("/selectedroom", (req,res)=>{
 
-    const userName = req.body.userName;
-    const roomName = req.body.select_room;
+    const username = req.body.username;
+    const roomname = req.body.select_room;
 
-    //console.log("userName: "+userName+" || roomName: "+roomName);
 
     res.render("main",{
-        userName:userName,
-        roomName:roomName
+        username:username,
+        roomname:roomname
   })
 
 })
 
 router.get("/room", (req,res)=>{
 
-    console.log("Room: "+rms+" || username: "+userName)
+    //console.log("Room: "+rms+" || username: "+username)
     
     rooms.findAll({raw:true}).then(rooms =>{
         res.render("room");

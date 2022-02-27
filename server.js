@@ -13,6 +13,8 @@ const usersInRoom = require("./database/usersInRoom");
 const messages = require("./database/messages");
 
 
+
+
 //session
 
 app.use(session({
@@ -48,33 +50,29 @@ app.get("/main", middlewares,(req,res)=>{
 
 
 
-
-
 io.on("connection", (socket)=>{
 
     console.log("Conexão feita com Sucesso")
 
 
     socket.on("selected_room", (data)=>{
-        /*
-        messages.findAll({where:{roomName:data.roomName}}).then(message=>{
-            console.log("ARRRRAAAYAYYAYAYYAYAYYAYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY")
-            console.log("TAMANHO DO ARRAY: "+ message.undefined)
+        
+        messages.findAll({where:{roomname:data.roomname}}).then(message=>{
+
             if(message==undefined){
                 console.log("CHEGUEI NO MESSAGES UNDEFINED")
             }else {
                 console.log("VÁ VIR O FOR EM SEGUIDA")
                 for(let i=0; i<message.length;i++){
-                    console.log("roomName: "+message[i].roomName+" || userName: "+message[i].userName);
-                    console.log("Mensagem: "+message[i].msg);
-                    io.to(data.roomName).emit("showmessage", message[i])
+                    console.log("roomname: "+message[i].roomname+" || username: "+message[i].username);
+                    console.log("Mensagem: "+message[i].messages);
+                    io.to(data.roomname).emit("showmessage", message[i])
                 }
             }
 
         })
-        */
         
-        rooms.findOne({where:{roomName:data.roomName}}).then(room =>{
+        rooms.findOne({where:{roomname:data.roomname}}).then(room =>{
             
               if(room == undefined){
                 console.log("ROOM NAO EXISTE");
@@ -82,10 +80,10 @@ io.on("connection", (socket)=>{
               }else{ // room exists
           
                 if(room.limit == "group"){
-                    usersInRoom.findAll({where:{roomName:data.roomName}}).then(inRoom =>{
+                    usersInRoom.findAll({where:{roomname:data.roomname}}).then(inRoom =>{
                         let local=false,i;
                         for(i = 0; i<inRoom.length; i++){
-                            if(inRoom[i].userName == data.userName){
+                            if(inRoom[i].username == data.username){
                                 local = true;break;
                             }
                         }
@@ -97,15 +95,15 @@ io.on("connection", (socket)=>{
                         }else{ /*usuário nunca esteve nessa room group
                                 então da join e anexe no userIroom*/
                           usersInRoom.create({
-                              roomName:data.roomName,
-                              userName:data.userName,
+                              roomname:data.roomname,
+                              username:data.username,
                               socketId:socket.id
                           }).then(()=>{
                               console.log("ATRELACAO FEITA COM SUCESSO");
                           })
                         }
                   });
-                  socket.join(data.roomName);   
+                  socket.join(data.roomname);   
                   
 
                   
@@ -117,11 +115,11 @@ io.on("connection", (socket)=>{
                 //PRIVADO
                 }else { //room.limit == private
     
-                    usersInRoom.findAll({where:{roomName:data.roomName}}).then(inRoom =>{
+                    usersInRoom.findAll({where:{roomname:data.roomname}}).then(inRoom =>{
                         let local0=false,i;
                         for(i = 0; i<inRoom.length; i++){
-                            if(inRoom[i].userName == data.userName){
-                                console.log("NOMES: "+inRoom[i].userName)
+                            if(inRoom[i].username == data.username){
+                                console.log("NOMES: "+inRoom[i].username)
                                 local0 = true;break;
                             }
                         }
@@ -129,7 +127,7 @@ io.on("connection", (socket)=>{
                         if(local0){
                             /*usuário esteve nessa private room 
                          atualize seu id e da um join para room*/
-                            socket.join(data.roomName);
+                            socket.join(data.roomname);
                             inRoom[i].socketId = socket.id;
                             console.log("ID atualizado - Privado");
 
@@ -144,14 +142,14 @@ io.on("connection", (socket)=>{
                                     /*usuário nunca esteve nessa room private, mas ele pode entrar
                                     então da join e anexe no userIroom*/
                                     usersInRoom.create({
-                                        roomName:data.roomName,
-                                        userName:data.userName,
+                                        roomname:data.roomname,
+                                        username:data.username,
                                         socketId:socket.id
             
                                     }).then(()=>{
                                     console.log("ATRELACAO FEITA COM SUCESSO");
                                     })
-                                    socket.join(data.roomName);
+                                    socket.join(data.roomname);
                                 }
 
                         }
@@ -166,24 +164,23 @@ io.on("connection", (socket)=>{
       
       
     socket.on("message", (data)=>{
-        //roomName userName msg
-        //roomName, userName, messages
-        usersInRoom.findAll({where:{roomName:data.roomName}}).then(inRoom=>{
+
+        usersInRoom.findAll({where:{roomname:data.roomname}}).then(inRoom=>{
             let local;
             for(let i = 0; i<inRoom.length; i++){
-                if(inRoom[i].userName == data.userName){
+                if(inRoom[i].username == data.username){
                     local = true;
                 }
             }
             if(local){
 
                 messages.create({
-                    roomName:data.roomName,
-                    userName:data.userName,
+                    roomname:data.roomname,
+                    username:data.username,
                     messages:data.msg
                 })
 
-                io.to(data.roomName).emit("showmessage", data)
+                io.to(data.roomname).emit("showmessage", data)
             }else{
                 console.log("Voce nao deveria estar nessa sala")
             }

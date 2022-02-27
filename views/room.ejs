@@ -24,7 +24,7 @@
         <!--Form de criação de rooms-->
           <form action="/createRoom" method="POST">
             <label type="text" class="title" > Crie uma nova sala </label> 
-            <input type="text" class="room-name" placeholder="Nome da sala" name="roomName" required>
+            <input type="text" class="room-name" placeholder="Nome da sala" name="roomname" required>
             <select name="limit" required >
               <option value="-1">Selecione o tipo de sala</option>
               <option value="private">privado</option>
@@ -41,12 +41,12 @@
 
         <!-- Selecione rooms-->
           <form action="/selectedroom" method="POST">
-            <input type="hidden"  value= "<%=userName%>" name = "userName" >
+            <input type="hidden"  value= "<%=username%>" name = "username" >
             <label type="text" class="title" > Selecione uma sala </label> 
             <select name="select_room">
               <option value="-1">Selecione uma sala</option>
               <% rms.forEach(function(name){ %>
-              <option value="<%=name.roomName%>"><%=name.roomName%> </option>
+              <option value="<%=name.roomname%>"><%=name.roomname%> </option>
               <% }); %>
 
             </select>
