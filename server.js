@@ -1,8 +1,6 @@
 
-const {http} = require("./https");
-const {io} = require("./https");
-const {app} = require("./https");
-const {express} = require("./https");
+
+const {http,io,app,express} = require("./https")
 const bodyParser = require("body-parser");
 const users = require("./database/users");
 const usersController = require("./user/usersController");
@@ -50,13 +48,42 @@ app.get("/main", middlewares,(req,res)=>{
 
 
 
+
 io.on("connection", (socket)=>{
 
     console.log("Conexão feita com Sucesso")
 
 
-    socket.on("selected_room", (data)=>{
+    socket.on("selected_room", (data,callback)=>{
         
+            /*
+        messages.findAll({where:{roomname:data.roomname}}).then(message=>{
+
+            if(message==undefined){
+                console.log("CHEGUEI NO MESSAGES UNDEFINED")
+            }else {
+
+                for(let i=0; i<message.length;i++){
+
+                    const data = ({
+                        roomname:message[i].roomname,
+                        username:message[i].username,
+                        msg:message[i].messages
+                    });
+
+
+                    console.log("roomname: "+message[i].roomname+" || username: "+message[i].username);
+                    console.log("Mensagem: "+message[i].messages);
+                    console.log("----------------------------------------")
+
+                    io.to(data.roomname).emit("showmessage", message[i])
+                }
+            }
+
+        })*/
+        
+
+        /*
         messages.findAll({where:{roomname:data.roomname}}).then(message=>{
 
             if(message==undefined){
@@ -70,17 +97,27 @@ io.on("connection", (socket)=>{
                 }
             }
 
-        })
-        
+        })*/
+
+
+
+
+
+
+
+
+
         rooms.findOne({where:{roomname:data.roomname}}).then(room =>{
             
               if(room == undefined){
                 console.log("ROOM NAO EXISTE");
     
               }else{ // room exists
-          
-                if(room.limit == "group"){
-                    usersInRoom.findAll({where:{roomname:data.roomname}}).then(inRoom =>{
+                const verificaRooms =usersInRoom.findAll({where:{roomname:data.roomname}});
+
+                if(room.limit == "group"){  
+                
+                    verificaRooms.then(inRoom =>{
                         let local=false,i;
                         for(i = 0; i<inRoom.length; i++){
                             if(inRoom[i].username == data.username){
@@ -94,36 +131,30 @@ io.on("connection", (socket)=>{
                             
                         }else{ /*usuário nunca esteve nessa room group
                                 então da join e anexe no userIroom*/
-                          usersInRoom.create({
-                              roomname:data.roomname,
-                              username:data.username,
-                              socketId:socket.id
-                          }).then(()=>{
-                              console.log("ATRELACAO FEITA COM SUCESSO");
+                            usersInRoom.create({
+                                roomname:data.roomname,
+                                username:data.username,
+                                socketId:socket.id
+                            }).then(()=>{
+                                console.log("ATRELACAO FEITA COM SUCESSO");
                           })
                         }
                   });
                   socket.join(data.roomname);   
                   
-
-                  
-
-
-                  
-
-
                 //PRIVADO
                 }else { //room.limit == private
     
-                    usersInRoom.findAll({where:{roomname:data.roomname}}).then(inRoom =>{
+                    verificaRooms.then(inRoom =>{
+
                         let local0=false,i;
+
                         for(i = 0; i<inRoom.length; i++){
                             if(inRoom[i].username == data.username){
-                                console.log("NOMES: "+inRoom[i].username)
                                 local0 = true;break;
                             }
                         }
-                        console.log("TAMANHO DO INROOOOOMM: "+inRoom.lenght)
+
                         if(local0){
                             /*usuário esteve nessa private room 
                          atualize seu id e da um join para room*/
@@ -134,31 +165,74 @@ io.on("connection", (socket)=>{
                         }else{  
                             /*nunca esteve nessa room antes, verificar quantas pessoas tem nesta 
                             room privada, caso tenha menos de duas pessoas, usuário pode entrar */
-                                console.log("QUANTAS PESSOAS NA SALA: "+inRoom.length)
         
-                                if(inRoom.length == 2){//não pode entrar, chat privado
-                                    console.log("SALA CHEIA, NÃO VAI ENTRARRRRR")
-                                }else{
-                                    /*usuário nunca esteve nessa room private, mas ele pode entrar
-                                    então da join e anexe no userIroom*/
-                                    usersInRoom.create({
-                                        roomname:data.roomname,
-                                        username:data.username,
-                                        socketId:socket.id
-            
-                                    }).then(()=>{
+                            if(inRoom.length == 2){//não pode entrar, chat privado
+                                    console.log("SALA CHEIA, NÃO VAI ENTRAR")
+                            }else{
+                                /*usuário nunca esteve nessa room private, mas ele pode entrar
+                                então da join e anexe no userIroom*/
+                                usersInRoom.create({
+                                    roomname:data.roomname,
+                                    username:data.username,
+                                    socketId:socket.id
+                                }).then(()=>{
                                     console.log("ATRELACAO FEITA COM SUCESSO");
-                                    })
-                                    socket.join(data.roomname);
-                                }
-
+                                })
+                                socket.join(data.roomname);
+                            }
                         }
-                    
                   })
                 } 
               }
-
         })
+
+
+        messages.findAll({where:{roomname:data.roomname}}).then(message=>{
+
+            /*if(message==undefined){
+                console.log("CHEGUEI NO MESSAGES UNDEFINED")
+            }else {
+                console.log("VÁ VIR O FOR EM SEGUIDA")
+                for(let i=0; i<message.length;i++){
+                    console.log("roomname: "+message[i].roomname+" || username: "+message[i].username);
+                    console.log("Mensagem: "+message[i].messages);
+                    io.to(data.roomname).emit("showmessage", message[i])
+                }
+            }*/
+            
+
+            
+
+            /*const data = ({
+                roomname:message[i].roomname,
+                username:message[i].username,
+                msg:message[i].messages
+            });*/
+            let list=[];
+            for(let i=0; i<message.length;i++){
+                
+                const data = ({
+                    roomname:message[i].roomname,
+                    username:message[i].username,
+                    msg:message[i].messages
+                })
+
+            list.push(data);
+                
+            }
+            
+            callback(list);
+        })
+
+
+
+
+
+
+
+
+
+
 
     })
       

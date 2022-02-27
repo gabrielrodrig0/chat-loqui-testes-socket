@@ -8,5 +8,5 @@ const messages = connection.define("messages", {
 
 })
 
-messages.sync({force:true});
+messages.sync({force:false});
 module.exports = messages;

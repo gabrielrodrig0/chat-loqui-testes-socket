@@ -6,6 +6,6 @@ const rooms = connection.define("rooms", {
     limit:{type: Sequelize.STRING, allowNull:false},
 })
 
-rooms.sync({force:true});
+rooms.sync({force:false});
 
 module.exports = rooms;

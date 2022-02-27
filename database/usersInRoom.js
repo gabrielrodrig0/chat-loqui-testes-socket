@@ -7,6 +7,6 @@ const usersInRooms = connection.define("user", {
     socketId:{type:Sequelize.STRING, allowNull:false}
 })
 
-usersInRooms.sync({force:true});
+usersInRooms.sync({force:false});
 
 module.exports = usersInRooms;

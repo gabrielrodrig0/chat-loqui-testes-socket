@@ -35,11 +35,17 @@
     const roomname = "<%=roomname%>";
     const username = "<%=username%>";
 
-    socket.emit("selected_room", { roomname:roomname, username:username});
+    socket.emit("selected_room", { 
+      roomname:roomname, 
+      username:username},(responde)=>{
+        responde.forEach(element => {
+          show(element)
+        });
+      });
+
     function enviar(){
 
         const msg = document.getElementById("msg").value;
-
 
         if (msg === ""){
             return;
@@ -52,8 +58,12 @@
     }
 
     socket.on("showmessage", data=>{
+      show(data)    
+    })
 
-            let p = document.createElement("p");
+    function show (data){
+
+      let p = document.createElement("p");
             p.innerText = data.username+": "+data.msg;
             p.style.marginBottom = "0.5rem";
             p.style.backgroundColor = "#A3A3A3";
@@ -62,24 +72,11 @@
             p.style.overflow = "auto";
             let div = document.getElementById("msg-box");
             div.appendChild(p);
-        })
-
-
+    }   
     
-
-
-
-
-
-
-
-
     
   </script>
 
-
-
-  
 </body>
 
 
