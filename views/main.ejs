@@ -7,12 +7,12 @@
     <link rel="stylesheet" href="./styles.css">
     <title>Welcome Back! <%=username%> </title>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.js" 
-      integrity="sha512-MgkNs0gNdrnOM7k+0L+wgiRc5aLgl74sJQKbIWegVIMvVGPc1+gc1L2oK9Wf/D9pq58eqIJAxOonYPVE5UwUFA==" 
-      crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.js"></script>
-    
-  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.js" 
+    integrity="sha512-MgkNs0gNdrnOM7k+0L+wgiRc5aLgl74sJQKbIWegVIMvVGPc1+gc1L2oK9Wf/D9pq58eqIJAxOonYPVE5UwUFA==" 
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
 
 </head>
   
@@ -29,55 +29,65 @@
 
   <!-- AQUI EMBAIXO ENTRA O JAVASCRIPT-->
 
-  <script >
-    
-    const socket = io();
-    const roomname = "<%=roomname%>";
-    const username = "<%=username%>";
+  <script> 
 
-    socket.emit("selected_room", { 
-      roomname:roomname, 
-      username:username},(responde)=>{
-        responde.forEach(element => {
-          show(element)
-        });
-      });
+const socket = io();
 
-    function enviar(){
+const roomname = "<%=roomname%>";
+const username = "<%=username%>";
+const number = "<%=number%>";
 
-        const msg = document.getElementById("msg").value;
+socket.emit("selected_room", { 
+  roomname, 
+  username,
+  number
 
-        if (msg === ""){
-            return;
-        }
-        else {
-            socket.emit("message", {roomname, username, msg});
-            document.getElementById("msg").value="";
-        }
+},(responde)=>{
+    responde.forEach(element => {
+      show(element)
+    });
+  });
 
+function enviar(){
+
+    const msg = document.getElementById("msg").value;
+
+    if (msg === ""){
+        return;
+    }
+    else {
+        socket.emit("message", {roomname, username, msg});
+        document.getElementById("msg").value="";
     }
 
-    socket.on("showmessage", data=>{
-      show(data)    
-    })
+}
 
-    function show (data){
+socket.on("showmessage", data=>{
+  show(data)    
+})
 
-      let p = document.createElement("p");
-            p.innerText = data.username+": "+data.msg;
-            p.style.marginBottom = "0.5rem";
-            p.style.backgroundColor = "#A3A3A3";
-            p.style.padding = "0.5rem";
-            p.style.borderRadius = "0.3rem";
-            p.style.overflow = "auto";
-            let div = document.getElementById("msg-box");
-            div.appendChild(p);
-    }   
-    
-    
-  </script>
+function show (data){
+
+  let p = document.createElement("p");
+        p.innerText = data.username+": "+data.msg;
+        p.style.marginBottom = "0.5rem";
+        p.style.backgroundColor = "#A3A3A3";
+        p.style.padding = "0.5rem";
+        p.style.borderRadius = "0.3rem";
+        p.style.overflow = "auto";
+        let div = document.getElementById("msg-box");
+        div.appendChild(p);
+} 
+
+
+     </script> 
+
+
+<!-- <script src="/socket.io/socket.io.js"></script> -->
+
 
 </body>
+
 
 
 </html>

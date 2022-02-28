@@ -10,9 +10,6 @@ const rooms = require("./database/rooms");
 const usersInRoom = require("./database/usersInRoom");
 const messages = require("./database/messages");
 
-
-
-
 //session
 
 app.use(session({
@@ -56,161 +53,90 @@ io.on("connection", (socket)=>{
 
     socket.on("selected_room", (data,callback)=>{
         
-            /*
-        messages.findAll({where:{roomname:data.roomname}}).then(message=>{
+        socket.join(data.roomname);
 
-            if(message==undefined){
-                console.log("CHEGUEI NO MESSAGES UNDEFINED")
-            }else {
-
-                for(let i=0; i<message.length;i++){
-
-                    const data = ({
-                        roomname:message[i].roomname,
-                        username:message[i].username,
-                        msg:message[i].messages
-                    });
-
-
-                    console.log("roomname: "+message[i].roomname+" || username: "+message[i].username);
-                    console.log("Mensagem: "+message[i].messages);
-                    console.log("----------------------------------------")
-
-                    io.to(data.roomname).emit("showmessage", message[i])
-                }
-            }
-
-        })*/
+        const verificaRooms = usersInRoom.findAll({where:{roomname:data.roomname}});
         
+        
+        console.log(`
+        --------------------------------------------------------------------------------
+        Username: ${data.username} | Roomname: ${data.roomname} | Number: ${data.number}
+        ---------------------------------------------------------------------------`
+        );
 
-        /*
-        messages.findAll({where:{roomname:data.roomname}}).then(message=>{
 
-            if(message==undefined){
-                console.log("CHEGUEI NO MESSAGES UNDEFINED")
-            }else {
-                console.log("VÁ VIR O FOR EM SEGUIDA")
-                for(let i=0; i<message.length;i++){
-                    console.log("roomname: "+message[i].roomname+" || username: "+message[i].username);
-                    console.log("Mensagem: "+message[i].messages);
-                    io.to(data.roomname).emit("showmessage", message[i])
+        verificaRooms.then(inRoom =>{
+
+            let i;
+            for(i = 0; i<inRoom.length; i++){
+                if(inRoom[i].username == data.username){
+                    break;
                 }
             }
 
-        })*/
 
+            switch(data.number){
 
-
-
-
-
-
-
-
-        rooms.findOne({where:{roomname:data.roomname}}).then(room =>{
-            
-              if(room == undefined){
-                console.log("ROOM NAO EXISTE");
+                case '1': //GRUPO
+                    /*usuário já esteve nessa room
+                      atualize seu id e da um join para room*/
+                    inRoom[i].socketId = socket.id;
+                    console.log("ID atualizado - Grupo");
+                break;
     
-              }else{ // room exists
-                const verificaRooms =usersInRoom.findAll({where:{roomname:data.roomname}});
-
-                if(room.limit == "group"){  
+                case '2': //GRUPO
+                    /*usuário nunca esteve nessa room group
+                        então da join e anexe no userIroom*/
+                    usersInRoom.create({
+                        roomname:data.roomname,
+                        username:data.username,
+                        socketId:socket.id
+                    }).then(()=>{
+                    console.log("ATRELACAO FEITA COM SUCESSO");
+                    })
+                break;
+    
+                case '3': 
+                      /*usuário esteve nessa private room 
+                   atualize seu id e da um join para room*/
+                    
+                    socket.join(data.roomname);
+                    inRoom[i].socketId = socket.id;
+                    console.log("ID atualizado - Privado");
+                break;
+    
+                case '4': 
+                    /*usuário nunca esteve nessa room private, mas ele pode entrar
+                    então da join e anexe no userIroom*/
+                    usersInRoom.create({
+                        roomname:data.roomname,
+                        username:data.username,
+                        socketId:socket.id
+                    }).then(()=>{
+                        console.log("ATRELACAO FEITA COM SUCESSO");
+                    })
+                    
+                break;
                 
-                    verificaRooms.then(inRoom =>{
-                        let local=false,i;
-                        for(i = 0; i<inRoom.length; i++){
-                            if(inRoom[i].username == data.username){
-                                local = true;break;
-                            }
-                        }
-                        if(local){/*usuário já esteve nessa room
-                            atualize seu id e da um join para room*/
-                            inRoom[i].socketId = socket.id;
-                            console.log("ID atualizado - Grupo")
-                            
-                        }else{ /*usuário nunca esteve nessa room group
-                                então da join e anexe no userIroom*/
-                            usersInRoom.create({
-                                roomname:data.roomname,
-                                username:data.username,
-                                socketId:socket.id
-                            }).then(()=>{
-                                console.log("ATRELACAO FEITA COM SUCESSO");
-                          })
-                        }
-                  });
-                  socket.join(data.roomname);   
-                  
-                //PRIVADO
-                }else { //room.limit == private
-    
-                    verificaRooms.then(inRoom =>{
+                default: console.log("NÃO DEVERIA TA AQUI"); break;
+            }
 
-                        let local0=false,i;
-
-                        for(i = 0; i<inRoom.length; i++){
-                            if(inRoom[i].username == data.username){
-                                local0 = true;break;
-                            }
-                        }
-
-                        if(local0){
-                            /*usuário esteve nessa private room 
-                         atualize seu id e da um join para room*/
-                            socket.join(data.roomname);
-                            inRoom[i].socketId = socket.id;
-                            console.log("ID atualizado - Privado");
-
-                        }else{  
-                            /*nunca esteve nessa room antes, verificar quantas pessoas tem nesta 
-                            room privada, caso tenha menos de duas pessoas, usuário pode entrar */
-        
-                            if(inRoom.length == 2){//não pode entrar, chat privado
-                                    console.log("SALA CHEIA, NÃO VAI ENTRAR")
-                            }else{
-                                /*usuário nunca esteve nessa room private, mas ele pode entrar
-                                então da join e anexe no userIroom*/
-                                usersInRoom.create({
-                                    roomname:data.roomname,
-                                    username:data.username,
-                                    socketId:socket.id
-                                }).then(()=>{
-                                    console.log("ATRELACAO FEITA COM SUCESSO");
-                                })
-                                socket.join(data.roomname);
-                            }
-                        }
-                  })
-                } 
-              }
         })
+    
+        
+
+
+
+
+
+
 
 
         messages.findAll({where:{roomname:data.roomname}}).then(message=>{
 
-            /*if(message==undefined){
-                console.log("CHEGUEI NO MESSAGES UNDEFINED")
-            }else {
-                console.log("VÁ VIR O FOR EM SEGUIDA")
-                for(let i=0; i<message.length;i++){
-                    console.log("roomname: "+message[i].roomname+" || username: "+message[i].username);
-                    console.log("Mensagem: "+message[i].messages);
-                    io.to(data.roomname).emit("showmessage", message[i])
-                }
-            }*/
-            
-
-            
-
-            /*const data = ({
-                roomname:message[i].roomname,
-                username:message[i].username,
-                msg:message[i].messages
-            });*/
             let list=[];
             for(let i=0; i<message.length;i++){
-                
+
                 const data = ({
                     roomname:message[i].roomname,
                     username:message[i].username,
@@ -223,14 +149,6 @@ io.on("connection", (socket)=>{
             
             callback(list);
         })
-
-
-
-
-
-
-
-
 
 
 
@@ -263,6 +181,11 @@ io.on("connection", (socket)=>{
         
 
     })
+
+    
+
+
+
 
     
 })

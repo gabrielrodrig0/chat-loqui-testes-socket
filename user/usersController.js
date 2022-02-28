@@ -3,19 +3,19 @@ const users = require("../database/users");
 const rooms = require("../database/rooms");
 const router = express.Router();
 const bcrypt = require("bcrypt");
+const usersInRoom = require("../database/usersInRoom");
 
-let aux;
 
-/*
-let username;
-let roomname;
 
-function preenUser(un) {
-    username = un;
+function renderMain(res,roomname, username,number){
+
+    res.render("main",{
+        username:username,
+        roomname:roomname,
+        number
+    })
 }
-function preenRoom(rm){
-    roomname = rm;
-}*/
+
 
 
 
@@ -30,38 +30,16 @@ function allRooms(res,username){
             rms:rms
         })
     })
-
-    /* Se liga que interessante, pelo menos para mim...
-    ISSO AQUI..
-    const caramba=rooms.findAll({raw:true}) 
-
-    caramba.then(rms =>{
-        res.render("room",{
-            username:username,
-            rms:rms
-        })
-    É A MESMA COISA QUE ISSO AQUI
-
-    rooms.findAll({raw:true}).then(rms =>{
-        res.render("room",{
-            username:username,
-            rms:rms
-        })
-    O "caramba" não assume o valor que em tese a função retornaria -normal em outras linguagens-,
-    ele vira a própria função junto com seus parametros.
-    MAS, o primeiro é melhor de utilizar, diminui código
-    })
-
-    */
-
-
 }
+     
 
 
 //Login
 router.get("/", (req,res)=>{
     res.render("login");
 })
+
+
 
 router.post("/authenticate", (req,res)=>{
     
@@ -154,6 +132,7 @@ router.post("/createRoom", (req,res)=>{
     const limit = req.body.limit;
     const roomname = req.body.roomname;
 
+    //const {limit, roomname} = req.body;
     rooms.findOne({where:{roomname:roomname}}).then(room =>{
   
       if(room != undefined){
@@ -169,17 +148,115 @@ router.post("/createRoom", (req,res)=>{
     })
 });
 
+
+
+
+
+
 router.post("/selectedroom", (req,res)=>{
 
     const username = req.body.username;
     const roomname = req.body.select_room;
 
-    res.render("main",{
-        username:username,
-        roomname:roomname
-    })
+    let number;
+    
+    rooms.findOne({where:{roomname:roomname}}).then(room =>{
+            
+        if(room == undefined){
+          console.log("ROOM NAO EXISTE");
+
+        }else{ // room exists
+          const verificaRooms = usersInRoom.findAll({where:{roomname:roomname}});
+
+          if(room.limit == "group"){  
+          
+              verificaRooms.then(inRoom =>{
+                  let local=false,i;
+                  for(i = 0; i<inRoom.length; i++){
+                      if(inRoom[i].username == username){
+                          local = true;break;
+                      }
+                  }
+
+                  if(local){// CASE 01
+                    number = 1;
+                    /*usuário já esteve nessa room
+                      atualize seu id e da um join para room*/
+                      renderMain(res,roomname, username,number);
+                      
+                  }else{//CASE 02
+                    number = 2;
+                    
+                    /*usuário nunca esteve nessa room group
+                        então da join e anexe no userIroom*/
+                    renderMain(res,roomname, username,number);
+                  }
+            });
+            
+          //PRIVADO
+          }else { //room.limit == private
+
+              verificaRooms.then(inRoom =>{
+
+                  let local0=false,i;
+
+                  for(i = 0; i<inRoom.length; i++){
+                      if(inRoom[i].username == username){
+                          local0 = true;break;
+                      }
+                  }
+
+                  if(local0){ //CASE 03
+                      /*usuário esteve nessa private room 
+                   atualize seu id e da um join para room*/
+                    number = 3;
+                    renderMain(res,roomname, username,number);
+
+                  }else{  
+                    /*nunca esteve nessa room antes, verificar quantas pessoas tem nesta 
+                      room privada, caso tenha menos de duas pessoas, usuário pode entrar */
+                    
+                    
+                      if(inRoom.length == 2){
+                          
+                        //não pode entrar, chat privado
+                        res.send("<h1>ROOM PRIVADA, SAI DAQUI<h1>")
+
+
+                      }else{ //CASE 04
+                        number = 4;
+                          /*usuário nunca esteve nessa room private, mas ele pode entrar
+                          então da join e anexe no userIroom*/
+                          renderMain(res,roomname, username,number);
+                      }
+                  }
+            })
+          } 
+        }
+  })
+
+    
+
+
+
+        
+
+
+
+/*
+
+
+*/
+
+
+    
 
 })
+
+
+
+
+
 
 
 router.get("/room",(req,res)=>{
