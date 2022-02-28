@@ -4,8 +4,8 @@ const rooms = require("../database/rooms");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const usersInRoom = require("../database/usersInRoom");
-
-
+//const auth = require("../middlewares/auth");
+const middlewares = require("../middlewares/auth");
 
 function renderMain(res,roomname, username,number){
 
@@ -15,8 +15,6 @@ function renderMain(res,roomname, username,number){
         number
     })
 }
-
-
 
 
 
@@ -31,7 +29,7 @@ function allRooms(res,username){
         })
     })
 }
-     
+
 
 
 //Login
@@ -57,8 +55,8 @@ router.post("/authenticate", (req,res)=>{
                     id:user.id,
                     user:user.username,
                 }
-                allRooms(res,username);
-            
+                //allRooms(res,username);
+                res.redirect("/room");
                 
             }else { res.redirect("/"); }
         }else {  res.redirect("/"); }
@@ -243,28 +241,37 @@ router.post("/selectedroom", (req,res)=>{
 
 
 
+})
+
 /*
-
-
+router.get("/room", auth, async (req,res)=>{
+    //allRooms(res,username);
+    let session = req.session.user;
+    //const rm = await rooms.findAll({raw:true}) 
+    //res.render("room", {username: session,rms: rm})
+    
+    /*rm.then(rms =>{
+        res.render("room",{
+            username:auth.user,
+            rms:rms
+        })
+    })
+})
 */
 
-
+router.get("/room", middlewares, (req,res)=>{ 
+    let username = req.session.user.user;
     
+    const rm=rooms.findAll({raw:true}) 
+
+    rm.then(rms =>{
+        res.render("room",{
+            username:username,
+            rms:rms
+        })
+    })
 
 })
-
-
-
-
-
-
-
-router.get("/room",(req,res)=>{
-    allRooms(res,username);
-})
-
-
-
 
 
 

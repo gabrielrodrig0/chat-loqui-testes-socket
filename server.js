@@ -34,7 +34,7 @@ app.use("/", usersController);
 
 
 //Principal socket 
-
+/*
 app.get("/main", middlewares,(req,res)=>{
     users.findOne({where:{username:req.session.user.user}}).then(user=>{
         let username = user.username;
@@ -42,7 +42,7 @@ app.get("/main", middlewares,(req,res)=>{
         console.log(username+" se conectou!");
     })
 })
-
+*/
 
 
 
